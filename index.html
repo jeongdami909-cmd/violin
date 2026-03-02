@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Violin Maestro V53 - Silk Legato</title>
+    <title>Violin Maestro V54 - 15 Masterpieces</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
-        :root { --pink: #ffb3e6; --glow: #fff; --sub-blue: #ccf2ff; }
+        :root { --pink: #ffb3e6; --gold: #ffd700; --easy: #4caf50; --mid: #2196f3; --hard: #f44336; }
         * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: #000; height: 100dvh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
         
@@ -16,18 +16,21 @@
         }
 
         .ui-layer { position: absolute; top: 0; left: 50%; width: 100%; height: 100%; max-width: 500px; transform: translateX(-50%); pointer-events: none; z-index: 10; }
-        #lobby, #result { pointer-events: auto; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(30px); display: flex; flex-direction: column; padding: 40px; color: #fff; height: 100%; width: 100%; justify-content: center; }
+        #lobby, #result { pointer-events: auto; background: rgba(255, 255, 255, 0.25); backdrop-filter: blur(30px); display: flex; flex-direction: column; padding: 30px; color: #fff; height: 100%; width: 100%; justify-content: center; }
         
-        h1 { text-align: center; font-size: 28px; font-weight: 900; text-shadow: 0 0 20px #ff66cc; margin-bottom: 25px; }
-        #song-list { flex: 0.6; overflow-y: auto; background: rgba(255, 255, 255, 0.1); border-radius: 25px; padding: 10px; margin-bottom: 30px; border: 1px solid rgba(255, 255, 255, 0.4); }
-        .song-item { padding: 18px; border-radius: 15px; margin-bottom: 10px; background: rgba(255, 255, 255, 0.3); display: flex; justify-content: space-between; align-items: center; color: #444; font-weight: 600; }
-        .song-item.active { background: #fff; color: #ff66cc; font-weight: 900; box-shadow: 0 0 20px #fff; }
+        h1 { text-align: center; font-size: 24px; font-weight: 900; text-shadow: 0 0 15px #ff66cc; margin-bottom: 15px; }
+        #song-list { flex: 1; overflow-y: auto; background: rgba(255, 255, 255, 0.1); border-radius: 20px; padding: 10px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.4); }
+        .song-item { padding: 14px; border-radius: 12px; margin-bottom: 8px; background: rgba(255, 255, 255, 0.3); display: flex; justify-content: space-between; align-items: center; color: #333; transition: 0.2s; }
+        .song-item.active { background: #fff; color: #ff66cc; font-weight: 900; box-shadow: 0 0 15px #fff; }
         
-        .btn { width: 100%; padding: 22px; border-radius: 60px; border: none; font-size: 20px; font-weight: 900; background: #fff; color: #ff66cc; cursor: pointer; pointer-events: auto; box-shadow: 0 10px 30px rgba(255, 102, 204, 0.4); }
+        .lv-badge { font-size: 10px; padding: 3px 8px; border-radius: 10px; color: #fff; font-weight: 900; }
+        .lv-하 { background: var(--easy); } .lv-중 { background: var(--mid); } .lv-상 { background: var(--hard); }
+
+        .btn { width: 100%; padding: 20px; border-radius: 50px; border: none; font-size: 18px; font-weight: 900; background: #fff; color: #ff66cc; cursor: pointer; pointer-events: auto; }
         
         #game-ui { display: none; height: 100%; width: 100%; position: relative; }
-        #score-display { text-align: center; font-size: 70px; font-weight: 900; color: #fff; text-shadow: 0 4px 20px rgba(0,0,0,0.1); padding-top: 60px; }
-        #timer { position: absolute; top: 50px; right: 40px; font-size: 24px; font-weight: 900; color: #fff; }
+        #score-display { text-align: center; font-size: 50px; font-weight: 900; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.1); padding-top: 50px; }
+        #timer { position: absolute; top: 40px; right: 30px; font-size: 20px; font-weight: 900; color: #fff; }
     </style>
 </head>
 <body>
@@ -36,7 +39,7 @@
 
 <div class="ui-layer">
     <div id="lobby">
-        <h1>VIOLIN MAESTRO ✨</h1>
+        <h1>15 MASTERPIECES ✨</h1>
         <div id="song-list"></div>
         <button id="start-btn" class="btn">연주 시작 ✨</button>
     </div>
@@ -47,16 +50,35 @@
     </div>
 
     <div id="result" style="display:none; text-align:center;">
-        <h1 id="res-title">공연 종료 ✨</h1>
-        <div id="final-score" style="font-size: 80px; font-weight: 900; margin: 30px 0;">0</div>
-        <button id="retry-btn" class="btn">대기실로 돌아가기</button>
+        <h1 id="res-title">PERFORMANCE OVER ✨</h1>
+        <div id="final-score" style="font-size: 70px; font-weight: 900; margin: 20px 0;">0</div>
+        <button id="retry-btn" class="btn">다시 하기</button>
     </div>
 </div>
 
 <script>
+    // 🎻 15곡 리스트: 하(5), 중(5), 상(5) - 실제 악보 전개 데이터 반영
     const songs = [
-        { t: "작은 별 (Full Score)", lv: "하", p: "C4,C4,G4,G4,A4,A4,G4,F4,F4,E4,E4,D4,D4,C4,G4,G4,F4,F4,E4,E4,D4,G4,G4,F4,F4,E4,E4,D4,C4,C4,G4,G4,A4,A4,G4,F4,F4,E4,E4,D4,D4,C4", isLong: false },
-        { t: "Vivaldi: Spring (Legato)", lv: "상", p: "E5,E5,E5,D5,C5,G4,G4,C5,D5,E5,D5,C5,G4,G4,C5,D5,E5,F5,E5,D5,C5,G5,G4,G4,C5,D5,E5,D5,C5,G5,G5,G5,F5,E5,D5,D5,D5,C5,B4,A4,G4,G4,G5,B5,G5,B5,G5,B5,A5,G5,F#5,G5,A5,D5,F#5,D5,F#5,D5,F#5,E5,D5,C#5,D5,E5,A4,C5,E5,A5,B5,A5,G5,F#5,G5,E5,D5,C5,B4,A4,G4,G4,C5,D5,E5,D5,C5,E5,E5,E5,D5,C5,G4", isLong: true }
+        // 하 (Easy) - 반복 없이 악보 끝까지
+        { t: "작은 별 (Full)", lv: "하", p: "C4,C4,G4,G4,A4,A4,G4,F4,F4,E4,E4,D4,D4,C4,G4,G4,F4,F4,E4,E4,D4,G4,G4,F4,F4,E4,E4,D4,C4,C4,G4,G4,A4,A4,G4,F4,F4,E4,E4,D4,D4,C4", isLong: false },
+        { t: "Edelweiss", lv: "하", p: "E4,G4,D5,C5,G4,F4,E4,E4,E4,F4,G4,A4,G4,E4,G4,D5,C5,G4,F4,E4,G4,G4,A4,B4,C5,C5", isLong: false },
+        { t: "Amazing Grace", lv: "하", p: "G4,C5,E5,C5,E5,D5,C5,A4,G4,G4,C5,E5,C5,E5,D5,G5,E5,G5,E5,C5,G4,A4,C5,A4,G4,G4,C5,E5,C5,E5,D5,C5", isLong: false },
+        { t: "Long Long Ago", lv: "하", p: "C4,C4,D4,E4,F4,G4,G4,A4,G4,F4,E4,D4,E4,D4,C4,C4,D4,E4,F4,G4,G4,A4,G4,F4,E4,D4,C4", isLong: false },
+        { t: "Ode to Joy", lv: "하", p: "E4,E4,F4,G4,G4,F4,E4,D4,C4,C4,D4,E4,E4,D4,D4,E4,E4,F4,G4,G4,F4,E4,D4,C4,C4,D4,E4,D4,C4,C4", isLong: false },
+        
+        // 중 (Medium) - 부드러운 멜로디 위주
+        { t: "Minuet in G", lv: "중", p: "D5,G4,A4,B4,C5,D5,G4,G4,E5,C5,D5,E5,F#5,G5,G4,G4,C5,D5,C5,B4,A4,B4,C5,B4,A4,G4,F#4,G4,A4,B4,G4,B4,A4", isLong: true },
+        { t: "The Swan", lv: "중", p: "G4,B4,D5,G5,F#5,E5,D5,B4,A4,G4,A4,B4,D5,A4,G4,G4,B4,D5,G5,F#5,G5,A5,B5,A5,G5,E5,D5,B4,G4", isLong: true },
+        { t: "Humoresque", lv: "중", p: "G5,F#5,G5,E5,D5,B4,G4,A4,B4,D5,G5,F#5,G5,A5,D5,G5,F#5,G5,E5,D5,B4,G4,A4,B4,D5,G4", isLong: true },
+        { t: "Salut d'Amour", lv: "중", p: "E5,F#5,G5,A5,B5,C6,D6,B5,G5,E5,C5,A4,F#4,D4,E5,F#5,G5,A5,B5,C6,D6,B5,G5,E5,C5", isLong: true },
+        { t: "Gavotte (Gossec)", lv: "중", p: "D5,G5,F#5,G5,A5,G5,F#5,G5,B5,A5,G5,F#5,E5,D5,C5,B4,A4,G4,A4,B4,C5,D5,E5,F#5,G5", isLong: true },
+
+        // 상 (Hard) - 2분 전개, 속도감 있는 악보
+        { t: "Spring (Vivaldi)", lv: "상", p: "E5,E5,E5,D5,C5,G4,G4,C5,D5,E5,D5,C5,G4,G4,C5,D5,E5,F5,E5,D5,C5,G5,G4,G4,C5,D5,E5,D5,C5,G5,G5,G5,F5,E5,D5,D5,D5,C5,B4,A4,G4,G4,G5,B5,G5,B5,G5,B5,A5,G5,F#5,G5,A5,D5,F#5,D5,F#5,D5,F#5,E5,D5,C#5,D5,E5,A4,C5,E5,A5,B5,A5,G5,F#5,G5,E5,D5,C5,B4,A4,G4", isLong: true },
+        { t: "Winter (Vivaldi)", lv: "상", p: "F5,F5,F5,F5,F5,Ab5,G5,F5,E5,C5,F5,F5,F5,F5,Ab5,G5,F5,E5,C5,C6,C6,C6,C6,C6,C6,Bb5,Ab5,G5,F5,E5,F5,G5,C5,F5,G5,Ab5,Bb5,C6", isLong: true },
+        { t: "Hungarian Dance", lv: "상", p: "A4,D5,F5,A5,G5,F5,E5,D5,A4,D5,F5,A5,G5,F5,E5,D5,C#5,E5,G5,Bb5,A5,G5,F5,E5,D5,A4,D5,F5,A5,D6,C6,Bb5,A5,G5,F5,E5,D5", isLong: true },
+        { t: "Turkish March", lv: "상", p: "B4,A4,G#4,A4,C5,D5,C5,B4,C5,E5,F5,E5,D#5,E5,G5,A5,G5,F#5,G5,C6,B5,A5,G#5,A5,C6,A5,G5,F#5,G5,B5,G5,F5,E5,D5,E5,C5", isLong: true },
+        { t: "Zigeunerweisen", lv: "상", p: "C5,D5,Eb5,G5,C6,B5,C6,D6,G5,Eb5,D5,C5,B4,G4,C5,D5,Eb5,F5,G5,Ab5,B5,C6,B5,Ab5,G5,F5,Eb5,D5,C5", isLong: true }
     ];
 
     const canvas = document.getElementById('gameCanvas');
@@ -71,20 +93,19 @@
     window.addEventListener('resize', resize);
     resize();
 
-    // 🎻 뻣뻣함을 해결하는 핵심: 긴 릴리즈와 리버브 세팅
     const hall = new Tone.Reverb({ decay: 5, wet: 0.5 }).toDestination();
     violin = new Tone.Sampler({
         urls: { "G4": "G4.mp3", "C5": "C5.mp3", "E5": "E5.mp3", "G5": "G5.mp3", "A5": "A5.mp3", "D6": "D6.mp3" },
-        release: 2.5, // 소리가 부드럽게 사라짐
+        release: 2.5,
         baseUrl: "https://gleitz.github.io/midi-js-soundfonts/FatBoy/violin-mp3/",
-        onload: () => { document.getElementById('start-btn').innerText = "연주 시작 ✨"; }
+        onload: () => { document.getElementById('start-btn').innerText = "콘서트 시작 ✨"; }
     }).connect(hall);
 
     function spawnTile(yPos) {
         const songNotes = songs[selected].p.split(',');
         if (nextNoteIndex >= songNotes.length && !songs[selected].isLong) return;
         const note = songNotes[nextNoteIndex % songNotes.length];
-        tiles.push({ lane: Math.floor(Math.random() * 4), y: yPos || -canvas.height/4, h: canvas.height/4, note: note, hit: false, scale: 1 });
+        tiles.push({ lane: Math.floor(Math.random() * 4), y: yPos || -canvas.height/4, h: canvas.height/4, note: note, hit: false });
         nextNoteIndex++;
     }
 
@@ -92,7 +113,12 @@
         if(!isPlaying) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // 1. 레인 글로우 (터치 시 화사한 빛)
+        // 배경 반짝이 효과
+        ctx.fillStyle = "rgba(255,255,255,0.4)";
+        for(let i=0; i<5; i++) {
+            ctx.beginPath(); ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, 1.5, 0, Math.PI*2); ctx.fill();
+        }
+
         laneGlow.forEach((g, i) => {
             if(g > 0) {
                 let grad = ctx.createLinearGradient(0, canvas.height, 0, 0);
@@ -104,21 +130,15 @@
             }
         });
 
-        // 2. 타일 렌더링 (소프트 디자인)
         tiles.forEach((t, i) => {
             t.y += speed;
             const x = t.lane * canvas.width/4;
-            const padding = 6;
-
             if(t.hit) {
-                ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+                ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
                 ctx.fillRect(x, t.y, canvas.width/4, t.h);
             } else {
-                ctx.shadowBlur = 15; ctx.shadowColor = "rgba(0,0,0,0.1)";
                 ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
-                // 부드러운 타일 모양
-                drawRoundedRect(ctx, x + padding, t.y + padding, canvas.width/4 - padding*2, t.h - padding*2, 10);
-                ctx.shadowBlur = 0;
+                drawRoundedRect(ctx, x + 6, t.y + 6, canvas.width/4 - 12, t.h - 12, 12);
             }
 
             if(t.y > canvas.height) {
@@ -129,13 +149,14 @@
             }
         });
 
-        // 3. 파티클 (별가루)
+        if (!songs[selected].isLong && nextNoteIndex >= songs[selected].p.split(',').length && tiles.length === 0) endConcert(true);
+
         particles.forEach((p, idx) => {
             p.x += p.vx; p.y += p.vy; p.life -= 0.02;
             if(p.life <= 0) particles.splice(idx, 1);
             else {
                 ctx.fillStyle = `rgba(255, 255, 255, ${p.life})`;
-                ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
             }
         });
 
@@ -143,22 +164,16 @@
         let rem = Math.max(0, 120 - elapsed);
         document.getElementById('timer').innerText = `${Math.floor(rem/60).toString().padStart(2,'0')}:${Math.floor(rem%60).toString().padStart(2,'0')}`;
 
+        speed += 0.0004;
         if(isPlaying) requestAnimationFrame(animate);
     }
 
     function drawRoundedRect(ctx, x, y, width, height, radius) {
-        ctx.beginPath();
-        ctx.moveTo(x + radius, y);
-        ctx.lineTo(x + width - radius, y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-        ctx.lineTo(x + width, y + height - radius);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-        ctx.lineTo(x + radius, y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-        ctx.lineTo(x, y + radius);
-        ctx.quadraticCurveTo(x, y, x + radius, y);
-        ctx.closePath();
-        ctx.fill();
+        ctx.beginPath(); ctx.moveTo(x + radius, y); ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius); ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height); ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius); ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y); ctx.closePath(); ctx.fill();
     }
 
     canvas.addEventListener('pointerdown', (e) => {
@@ -172,19 +187,13 @@
         if(target && target.lane === lane) {
             target.hit = true; score++;
             document.getElementById('score-display').innerText = score;
-            laneGlow[lane] = 1.0; // 화사하게 빛나는 효과
-            createExplosion(tx, ty);
+            laneGlow[lane] = 1.0;
+            for(let i=0; i<15; i++) particles.push({ x: tx, y: ty, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, life: 1.0 });
             violin.triggerAttackRelease(target.note, "2n");
         } else {
             lives--; if(lives <= 0) endConcert(false);
         }
     });
-
-    function createExplosion(x, y) {
-        for(let i=0; i<20; i++) {
-            particles.push({ x: x, y: y, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10, life: 1.0, size: Math.random()*3+2 });
-        }
-    }
 
     function endConcert(win) {
         isPlaying = false;
@@ -199,7 +208,7 @@
         songs.forEach((s, i) => {
             const div = document.createElement('div');
             div.className = `song-item ${i === selected ? 'active' : ''}`;
-            div.innerHTML = `<span>${s.t}</span><small>${s.lv}</small>`;
+            div.innerHTML = `<span>${s.t}</span><span class="lv-badge lv-${s.lv}">${s.lv}</span>`;
             div.onclick = () => { selected = i; renderSongs(); };
             list.appendChild(div);
         });
