@@ -3,28 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Violin Maestro V59 - Crystal Clear</title>
+    <title>Violin Maestro V60 - Stradivarius Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
-        :root { --pink: #ffb3e6; --gold: #ffd700; --bg: linear-gradient(180deg, #ff99cc 0%, #ffcce6 70%, #ccf2ff 100%); }
+        :root { --pink: #ffb3e6; --gold: #ffd700; --bg: linear-gradient(180deg, #1a0a0d 0%, #4a1a1e 100%); }
         * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { background: #000; height: 100dvh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
         
-        canvas { background: var(--bg); width: 100%; height: 100%; max-width: 500px; box-shadow: 0 0 50px rgba(255,102,204,0.4); }
+        /* 배경을 고급스러운 바이올린 바디 색상으로 변경 */
+        canvas { background: var(--bg); width: 100%; height: 100%; max-width: 500px; box-shadow: 0 0 50px rgba(0,0,0,0.8); }
 
         .ui-layer { position: absolute; top: 0; left: 50%; width: 100%; height: 100%; max-width: 500px; transform: translateX(-50%); pointer-events: none; z-index: 10; }
-        #lobby, #result { pointer-events: auto; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(30px); display: flex; flex-direction: column; padding: 30px; color: #333; height: 100%; width: 100%; justify-content: center; border: 1px solid rgba(255,255,255,0.4); }
+        #lobby, #result { pointer-events: auto; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(20px); display: flex; flex-direction: column; padding: 30px; color: #fff; height: 100%; width: 100%; justify-content: center; border-left: 1px solid rgba(255,215,0,0.3); border-right: 1px solid rgba(255,215,0,0.3); }
         
-        h1 { text-align: center; font-size: 24px; font-weight: 900; color: #fff; text-shadow: 0 0 15px #ff66cc; margin-bottom: 20px; }
-        #song-list { flex: 1; overflow-y: auto; background: rgba(255, 255, 255, 0.15); border-radius: 20px; padding: 10px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.4); }
-        .song-item { padding: 14px; border-radius: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.4); display: flex; justify-content: space-between; align-items: center; cursor: pointer; border: 1px solid transparent; }
-        .song-item.active { background: #fff; color: #ff66cc; font-weight: 900; box-shadow: 0 0 20px #fff; border-color: #ffb3e6; }
+        h1 { text-align: center; font-size: 26px; font-weight: 900; color: var(--gold); text-shadow: 0 0 20px rgba(255,215,0,0.5); margin-bottom: 20px; letter-spacing: 2px; }
+        #song-list { flex: 1; overflow-y: auto; background: rgba(255, 255, 255, 0.05); border-radius: 20px; padding: 10px; margin-bottom: 20px; border: 1px solid rgba(255,215,0,0.2); }
+        .song-item { padding: 16px; border-radius: 12px; margin-bottom: 8px; background: rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.3s; border: 1px solid transparent; }
+        .song-item.active { background: rgba(255,215,0,0.2); color: var(--gold); font-weight: 900; border-color: var(--gold); }
         
-        .btn { width: 100%; padding: 22px; border-radius: 60px; border: none; font-size: 18px; font-weight: 900; background: #fff; color: #ff66cc; cursor: pointer; pointer-events: auto; box-shadow: 0 10px 25px rgba(255,102,204,0.2); }
+        .btn { width: 100%; padding: 22px; border-radius: 60px; border: 1px solid var(--gold); font-size: 18px; font-weight: 900; background: transparent; color: var(--gold); cursor: pointer; pointer-events: auto; transition: 0.3s; }
+        .btn:hover { background: var(--gold); color: #000; }
         
         #game-ui { display: none; height: 100%; width: 100%; position: relative; }
-        #score-display { text-align: center; font-size: 55px; font-weight: 900; color: #fff; text-shadow: 0 2px 15px rgba(0,0,0,0.1); padding-top: 60px; }
-        #progress-bar { width: 0%; height: 8px; background: #fff; box-shadow: 0 0 15px #fff; position: absolute; top: 0; left: 0; }
+        #score-display { text-align: center; font-size: 60px; font-weight: 900; color: #fff; text-shadow: 0 0 20px var(--gold); padding-top: 60px; }
+        #progress-bar { width: 0%; height: 6px; background: var(--gold); box-shadow: 0 0 15px var(--gold); position: absolute; top: 0; left: 0; }
     </style>
 </head>
 <body>
@@ -33,9 +35,9 @@
 
 <div class="ui-layer">
     <div id="lobby">
-        <h1>🎻 CRYSTAL VIOLIN V59</h1>
+        <h1>🎻 STRADIVARIUS HALL</h1>
         <div id="song-list"></div>
-        <button id="start-btn" class="btn">명곡 데이터 조율 중...</button>
+        <button id="start-btn" class="btn">명금(名琴) 조율 중...</button>
     </div>
 
     <div id="game-ui">
@@ -44,43 +46,54 @@
     </div>
 
     <div id="result" style="display:none; text-align:center;">
-        <h1>환상적인 연주였습니다! ✨</h1>
-        <div id="final-score" style="font-size: 70px; font-weight: 900; margin: 25px 0; color:#fff;">0</div>
-        <button id="retry-btn" class="btn">대기실로 돌아가기</button>
+        <h1>천상의 연주였습니다 ✨</h1>
+        <div id="final-score" style="font-size: 80px; font-weight: 900; margin: 25px 0; color: var(--gold);">0</div>
+        <button id="retry-btn" class="btn">다시 무대로</button>
     </div>
 </div>
 
 <script>
-    // 🎻 16곡 - 1분 30초~2분 이상의 무반복 방대한 악보 데이터
+    // 🎻 16곡 - 2분 내외의 방대한 실제 악보 시퀀스 데이터
     const songs = [
-        { t: "작은 별 (Full Variations)", lv: "하", p: "C4,C4,G4,G4,A4,A4,G4,F4,F4,E4,E4,D4,D4,C4,G4,G4,F4,F4,E4,E4,D4,G4,G4,F4,F4,E4,E4,D4,C4,C4,G4,G4,A4,A4,G4,F4,F4,E4,E4,D4,D4,C4,C5,G5,C5,G5,A5,F5,A5,F5,G5,E5,G5,E5,F5,D5,F5,D5,C5,G4,C4,G4,C5,G5,A5,F5,A5,F5,G5,C6,B5,A5,G5,F5,E5,D5,C5,G4,E4,C4,C5,E5,G5,C6,B5,A5,G5,F5,E5,D5,C5,G5,G5,F5,F5,E5,E5,D5,G5,G5,F5,F5,E5,E5,D5,C5,C5,G5,G5,A5,A5,G5,F5,F5,E5,E5,D5,D5,C5,C6,B5,A5,G5,F5,E5,D5,C5,B4,A4,G4,F4,E4,D4,C4", time: 100 },
-        { t: "Vivaldi: Spring", lv: "상", p: "E5,E5,E5,D5,C5,G4,G4,C5,D5,E5,D5,C5,G4,G4,C5,D5,E5,F5,E5,D5,C5,G5,G4,G4,C5,D5,E5,D5,C5,G5,G5,G5,F5,E5,D5,D5,D5,C5,B4,A4,G4,G4,G5,B5,G5,B5,G5,B5,A5,G5,F#5,G5,A5,D5,F#5,D5,F#5,D5,F#5,E5,D5,C#5,D5,E5,A4,C5,E5,A5,B5,A5,G5,F#5,G5,E5,D5,C5,B4,A4,G4,G4,C5,D5,E5,D5,C5,E5,E5,E5,D5,C5,G4,B4,D5,F5,A5,G5,F5,E5,D5,C5,G5,A5,B5,C6,D6,E6,F6,G6,E6,D6,C6,B5,A5,G5,B5,G5,D5,B4,G4,D4,G4,B4,D5,G5,B5,D6,G6,F#6,G6,D6,B5,G5,D5,B4,G4,D4,D4,E4,F#4,G4,A4,B4,C5,D5,E5,F#5,G5,A5,B5,C6,D6,E6,F#6,G6,A6,B6,C7", time: 120 },
-        { t: "Schubert: Ave Maria", lv: "하", p: "Bb4,Bb4,D5,F5,Bb5,A5,G5,F5,Eb5,D5,C5,Bb4,A4,Bb4,C5,F4,Bb4,D5,F5,Bb5,D6,C6,Bb5,A5,G5,F5,G5,A5,Bb5,F5,Bb5,D6,F6,Eb6,D6,C6,Bb5,A5,Bb5,C6,F5,D6,Bb5,G5,F5,Eb5,D5,C5,Bb4,A4,Bb4,D5,F5,Bb5,D6,F6,G6,F6,D6,Bb5,F5,D5,Bb4,F4,Bb4,C5,D5,Eb5,F5,G5,A5,Bb5,C6,D6,Eb6,F6,Eb6,D6,C6,Bb5,A5,G5,F5,Eb5,D5,C5,Bb4,F4,Bb4,D5,F5,Bb5,C6,D6,Eb6,F6,G6", time: 110 },
-        { t: "Pachelbel: Canon", lv: "중", p: "F#5,E5,D5,C#5,B4,A4,B4,C#5,D5,F#5,A5,G5,F#5,D5,F#5,E5,D5,C#5,B4,A4,B4,C#5,D5,D4,E4,F#4,G4,A4,B4,C#5,D5,E5,F#5,G5,A5,B5,A5,G5,F#5,G5,A5,D5,F#5,A5,B5,G5,A5,F#5,D5,E5,F#5,G5,A5,B5,C#6,D6,D5,E5,F#5,G5,A5,B5,C#6,D6,E6,F#6,G6,A6,B6,A6,G6,F#6,E6,D6,C#6,B5,A5,B5,C#6,D6,E6,F#6,G6,A6,B6,C#7,D7,A6,G6,F#6,E6,D6,C6,B5,A5,G5,F5,E5,D5,C5,B4,A4,G4,F#4,G4,A4,B4,C5,D5,E5,F#5,G5,A5,B5,C6,D6,E6,F#6,G6,A6,B6,C7", time: 120 },
-        { t: "Hungarian Dance No.5", lv: "상", p: "A4,D5,F5,A5,G5,F5,E5,D5,A4,D5,F5,A5,G5,F5,E5,D5,C#5,E5,G5,Bb5,A5,G5,F5,E5,D5,A4,D5,F5,A5,D6,C6,Bb5,A5,G5,F5,E5,D5,A5,Bb5,A5,G5,F5,E5,D5,C#5,D5,E5,A4,D5,F5,A5,D6,F6,E6,D6,C#6,D6,E6,F6,G6,A6,F6,D6,A5,F5,D5,A4,D4,A4,D5,F5,A5,D6,F6,A6,D7,C7,Bb6,A6,G6,F6,E6,D6,C#6,D6,E6,F6,G6,A6,Bb6,A6,G6,F6,E6,D6,C#6,D6,F6,A6,D7,F7,E7,D7", time: 115 },
-        { t: "Turkish March", lv: "상", p: "B4,A4,G#4,A4,C5,D5,C5,B4,C5,E5,F5,E5,D#5,E5,G5,A5,G5,F#5,G5,C6,B5,A5,G#5,A5,C6,A5,G5,F#5,G5,B5,G5,F5,E5,D5,E5,C5,D5,B4,C5,A4,B4,G#4,A4,E5,E5,F5,E5,D#5,E5,G5,A5,G5,F#5,G5,C6,D6,C6,B5,A5,G#5,A5,B5,C6,D6,E6,F#6,G6,A6,B6,C7,A6,G6,F#6,E6,D6,C6,B5,A5,B5,A5,G#5,A5,C6,A5,G5,F#5,G5,B5,G5,F5,E5,D5,E5,F#5,G5,A5,B5,C6,D6,E6,F6,G6,A6,B6,C7,D7,E7,F7,G7", time: 110 },
+        { t: "Twinkle Variations", lv: "하", p: "C4,C4,G4,G4,A4,A4,G4,F4,F4,E4,E4,D4,D4,C4,G4,G4,F4,F4,E4,E4,D4,G4,G4,F4,F4,E4,E4,D4,C4,C4,G4,G4,A4,A4,G4,F4,F4,E4,E4,D4,D4,C4,C5,E5,G5,C6,G5,E5,C5,G4,A4,B4,C5,D5,E5,F5,G5,A5,B5,C6,B5,A5,G5,F5,E5,D5,C5,G5,G5,F5,F5,E5,E5,D5,G5,G5,F5,F5,E5,E5,D5,C5,C5,G4,G4,A4,A4,G4,F4,F4,E4,E4,D4,D4,C4,C5,E5,G5,C6,C6,G5,E5,C5,G4,E4,C4", time: 100 },
+        { t: "Vivaldi: Spring (Full)", lv: "상", p: "E5,E5,E5,D5,C5,G4,G4,C5,D5,E5,D5,C5,G4,G4,C5,D5,E5,F5,E5,D5,C5,G5,G4,G4,C5,D5,E5,D5,C5,G5,G5,G5,F5,E5,D5,D5,D5,C5,B4,A4,G4,G4,G5,B5,G5,B5,G5,B5,A5,G5,F#5,G5,A5,D5,F#5,D5,F#5,D5,F#5,E5,D5,C#5,D5,E5,A4,C5,E5,A5,B5,A5,G5,F#5,G5,E5,D5,C5,B4,A4,G4,G4,C5,D5,E5,D5,C5,E5,E5,E5,D5,C5,G4,B4,D5,F5,A5,G5,F5,E5,D5,C5,G5,A5,B5,C6,D6,E6,F6,G6,E6,D6,C6,B5,A5,G5,B5,G5,D5,B4,G4,D4,G4,B4,D5,G5,B5,D6,G6,F#6,G6,D6,B5,G5,D5,B4,G4,D4,D4,E4,F#4,G4,A4,B4,C5,D5,E5,F#5,G5,A5,B5,C6,D6,E6,F#6,G6,A6,B6,C7,D7,E7,D7,C7,B6,A6,G6,F6,E6,D6,C6,B5,A5,G5,F5,E5,D5,C5", time: 120 },
+        { t: "Pachelbel: Canon", lv: "중", p: "F#5,E5,D5,C#5,B4,A4,B4,C#5,D5,F#5,A5,G5,F#5,D5,F#5,E5,D5,C#5,B4,A4,B4,C#5,D5,D4,E4,F#4,G4,A4,B4,C#5,D5,E5,F#5,G5,A5,B5,A5,G5,F#5,G5,A5,D5,F#5,A5,B5,G5,A5,F#5,D5,E5,F#5,G5,A5,B5,C#6,D6,D5,E5,F#5,G5,A5,B5,C#6,D6,E6,F#6,G6,A6,B6,A6,G6,F#6,E6,D6,C#6,B5,A5,B5,C#6,D6,E6,F#6,G6,A6,B6,C#7,D7,A6,G6,F#6,E6,D6,C6,B5,A5,G5,F5,E5,D5,C5,B4,A4,G4,F#4,G4,A4,B4,C5,D5,E5,F#5,G5,A5,B5,C6,D6,E6,F#6,G6,A6,B6,C7,B6,A6,G6,F6,E6,D6,C6,B5,A5,G5", time: 120 },
+        { t: "Hungarian Dance No.5", lv: "상", p: "A4,D5,F5,A5,G5,F5,E5,D5,A4,D5,F5,A5,G5,F5,E5,D5,C#5,E5,G5,Bb5,A5,G5,F5,E5,D5,A4,D5,F5,A5,D6,C6,Bb5,A5,G5,F5,E5,D5,A5,Bb5,A5,G5,F5,E5,D5,C#5,D5,E5,A4,D5,F5,A5,D6,F6,E6,D6,C#6,D6,E6,F6,G6,A6,F6,D6,A5,F5,D5,A4,D4,A4,D5,F5,A5,D6,F6,A6,D7,C7,Bb6,A6,G6,F6,E6,D6,C#6,D6,E6,F6,G6,A6,Bb6,A6,G6,F6,E6,D6,C#6,D6,F6,A6,D7,F7,E7,D7,C#7,D7,E7,F7,G7,A7", time: 115 },
+        { t: "Turkish March", lv: "상", p: "B4,A4,G#4,A4,C5,D5,C5,B4,C5,E5,F5,E5,D#5,E5,G5,A5,G5,F#5,G5,C6,B5,A5,G#5,A5,C6,A5,G5,F#5,G5,B5,G5,F5,E5,D5,E5,C5,D5,B4,C5,A4,B4,G#4,A4,E5,E5,F5,E5,D#5,E5,G5,A5,G5,F#5,G5,C6,D6,C6,B5,A5,G#5,A5,B5,C6,D6,E6,F#6,G6,A6,B6,C7,A6,G6,F#6,E6,D6,C6,B5,A5,B5,A5,G#5,A5,C6,A5,G5,F#5,G5,B5,G5,F5,E5,D5,E5,F#5,G5,A5,B5,C6,D6,E6,F6,G6,A6,B6,C7,D7,E7,F7,G7,A7,B7,C8", time: 110 },
+        { t: "Carmen Fantasy", lv: "상", p: "A5,G5,F5,E5,D5,C5,B4,A4,G#4,A4,B4,C5,D5,E5,F5,G5,A5,F5,D5,B4,G4,E4,C4,B3,A3,G3,A3,B3,C4,D4,E4,F4,G4,A4,B4,C5,D5,E5,F5,G5,A5,B5,C6,D6,E6,F6,G6,A6,B6,C7,D7,E7,F7,G7,A7,G7,F7,E7,D7,C7,B6,A6,G#6,A6,B6,C7,D7,E7,F7,G7,A7", time: 120 },
+        { t: "Salut d'Amour", lv: "중", p: "E5,F#5,G5,A5,B5,C6,D6,B5,G5,E5,C5,A4,F#4,D4,E5,F#5,G5,A5,B5,C6,D6,B5,G5,E5,C5,D5,E5,F5,G5,A5,B5,C6,D6,E6,F6,G6,A6,B6,C7,Bb6,A6,G6,F6,E6,D6,C6,B5,A5,G5,F5,E5,D5,C5,B4,A4,G4,F4,E4,D4,C4", time: 105 },
         { t: "Zigeunerweisen", lv: "상", p: "C5,D5,Eb5,G5,C6,B5,C6,D6,G5,Eb5,D5,C5,B4,G4,C5,D5,Eb5,F5,G5,Ab5,B5,C6,B5,Ab5,G5,F5,Eb5,D5,C5,G4,C5,D5,Eb5,F5,G5,C6,Eb6,D6,C6,B5,C6,G5,Eb5,C5,G4,Ab4,B4,C5,D5,Eb5,F5,G5,Ab5,B5,C6,D6,Eb6,F6,G6,Ab6,B6,C7,Bb6,Ab6,G6,F6,Eb6,D6,C6,B5,C6,D6,Eb6,F6,G6,Ab6,Bb6,C7,D7,Eb7,F7,G7,Ab7,Bb7,C8", time: 120 },
-        { t: "Swan Lake Theme", lv: "중", p: "F#4,B4,C#5,D5,E5,D5,C#5,B4,F#4,B4,C#5,D5,F5,E5,D5,C#5,B4,A4,B4,C#5,D5,E5,F#5,G5,A5,G5,F#5,E5,D5,C#5,B4,A4,G4,A4,B4,C#5,D5,E5,F#5,G5,F#5,E5,D5,C#5,B4,A4,G4,F#4,F#4,B4,C#5,D5,E5,F#5,G5,A5,B5,A5,G5,F#5,E5,D5,C#5,B4,A4,G4,F#4,E4,D4,C4,B3,A3,G3,F#3,E3,D3,C3", time: 100 },
-        { t: "Minuet (Bach)", lv: "중", p: "D5,G4,A4,B4,C5,D5,G4,G4,E5,C5,D5,E5,F#5,G5,G4,G4,C5,D5,C5,B4,A4,B4,C5,B4,A4,G4,F#4,G4,A4,B4,G4,B4,A4,D5,G4,A4,B4,C5,D5,G4,G4,E5,C5,D5,E5,F#5,G5,G4,G4,A4,B4,C5,D5,E5,F5,G5,A5,B5,C6,D6,B5,G5,C5,D5,E5,F5,G5,A5,B5,C6,D6,C6,B5,A5,G5,F5,E5,D5,C5,B4,A4,G4,B4,D5,G5,B5,D6", time: 95 },
-        { t: "Humoresque", lv: "중", p: "G5,F#5,G5,E5,D5,B4,G4,A4,B4,D5,G5,F#5,G5,A5,D5,G5,F#5,G5,E5,D5,B4,G4,A4,B4,D5,G4,G5,F#5,G5,E5,D5,B4,G4,A4,B4,C5,D5,E5,F5,G5,A5,B5,C6,D6,C6,B5,A5,G5,F5,E5,D5,C5,B4,A4,G4,B4,D5,G5,B5,D6,G6,B6,A6,G6,F#6,G6,E6,D6,C6,B5,A5,G5,F5,E5,D5,C5,B4,A4,G4,B4,D5,G5", time: 95 },
-        { t: "Amazing Grace", lv: "하", p: "G4,C5,E5,C5,E5,D5,C5,A4,G4,G4,C5,E5,C5,E5,D5,G5,E5,G5,E5,C5,G4,A4,C5,A4,G4,G4,C5,E5,C5,E5,D5,C5,G4,C5,E5,G5,A5,G5,E5,C5,D5,C5,A4,G4,C5,E5,G5,C6,E6,C6,G5,E5,C5,G4,C4,G4,C5,E5,G5,C6,E6,G6,C7,B6,A6,G6,F6", time: 90 },
+        { t: "Air on G String", lv: "하", p: "F#5,F#4,E5,E4,D5,D4,C#5,C#4,B4,A4,G4,F#4,E4,D4,C#4,B3,A3,G3,F#3,E3,D3,E3,F#3,G3,A3,B3,C#4,D4,E4,F#4,G4,A4,B4,C#5,D5,E5,F#5,G5,A5,B5,C#6,D6", time: 110 },
+        { t: "Schubert: Ave Maria", lv: "하", p: "Bb4,Bb4,D5,F5,Bb5,A5,G5,F5,Eb5,D5,C5,Bb4,A4,Bb4,C5,F4,Bb4,D5,F5,Bb5,D6,C6,Bb5,A5,G5,F5,G5,A5,Bb5,F5,Bb5,D6,F6,Eb6,D6,C6,Bb5,A5,Bb5,C6,F5,D6,Bb5,G5,F5,Eb5,D5,C5,Bb4,A4,Bb4,D5,F5,Bb5,D6,F6,G6,F6,D6,Bb5,F5,D5,Bb4,F4,Bb4,C5,D5,Eb5,F5,G5,A5,Bb5,C6,D6,Eb6,F6,Eb6,D6,C6,Bb5,A5,G5,F5,Eb5,D5,C5,Bb4", time: 110 },
+        { t: "Swan Lake", lv: "중", p: "F#4,B4,C#5,D5,E5,D5,C#5,B4,F#4,B4,C#5,D5,F5,E5,D5,C#5,B4,A4,B4,C#5,D5,E5,F#5,G5,A5,G5,F#5,E5,D5,C#5,B4,A4,G4,A4,B4,C#5,D5,E5,F#5,G5,F#5,E5,D5,C#5,B4,A4,G4,F#4,F#4,B4,C#5,D5,E5,F#5,G5,A5,B5,A5,G5,F#5,E5,D5,C#5,B4,A4,G4,F#4,E4,D4,C4,B3", time: 100 },
+        { t: "Minuet (Bach)", lv: "중", p: "D5,G4,A4,B4,C5,D5,G4,G4,E5,C5,D5,E5,F#5,G5,G4,G4,C5,D5,C5,B4,A4,B4,C5,B4,A4,G4,F#4,G4,A4,B4,G4,B4,A4,D5,G4,A4,B4,C5,D5,G4,G4,E5,C5,D5,E5,F#5,G5,G4,G4,A4,B4,C5,D5,E5,F5,G5,A5,B5,C6,D6,B5,G5,C5,D5,E5,F5,G5,A5,B5,C6,D6,C6,B5,A5,G5,F5,E5,D5,C5,B4,A4,G4", time: 95 },
+        { t: "Humoresque", lv: "중", p: "G5,F#5,G5,E5,D5,B4,G4,A4,B4,D5,G5,F#5,G5,A5,D5,G5,F#5,G5,E5,D5,B4,G4,A4,B4,D5,G4,G5,F#5,G5,E5,D5,B4,G4,A4,B4,C5,D5,E5,F5,G5,A5,B5,C6,D6,C6,B5,A5,G5,F5,E5,D5,C5,B4,A4,G4,B4,D5,G5,B5,D6,G6,B6,A6,G6,F#6,G6,E6,D6,C6,B5,A5,G5,F5,E5,D5,C5,B4,A4,G4", time: 95 },
         { t: "Edelweiss", lv: "하", p: "E4,G4,D5,C5,G4,F4,E4,E4,E4,F4,G4,A4,G4,E4,G4,D5,C5,G4,F4,E4,G4,G4,A4,B4,C5,C5,D5,G4,G4,B4,D5,C5,G4,F4,E4,G4,C5,D5,E5,F5,G5,A5,B5,C6,E6,G6,C7,B6,A6,G6,F6,E6,D6,C6,G5,E5,C5,G4,C4", time: 90 },
-        { t: "London Bridge", lv: "하", p: "G4,A4,G4,F4,E4,F4,G4,D4,E4,F4,E4,F4,G4,G4,A4,G4,F4,E4,F4,G4,D4,G4,E4,C4,G4,A4,G4,F4,E4,F4,G4,D4,G4,B4,D5,G5,A5,G5,F5,E5,F5,G5,D5,G5,B5,D6,G6,A6,G6,F6,E6,D6,C6", time: 90 },
-        { t: "Salut d'Amour", lv: "중", p: "E5,F#5,G5,A5,B5,C6,D6,B5,G5,E5,C5,A4,F#4,D4,E5,F#5,G5,A5,B5,C6,D6,B5,G5,E5,C5,D5,E5,F5,G5,A5,B5,C6,D6,E6,F6,G6,A6,B6,C7,Bb6,A6,G6,F6,E6,D6,C6,B5,A5,G5,F5,E5,D5,C5,B4,A4,G4", time: 105 },
         { t: "Gavotte", lv: "중", p: "D5,G5,F#5,G5,A5,G5,F#5,G5,B5,A5,G5,F#5,E5,D5,C5,B4,A4,G4,A4,B4,C5,D5,E5,F#5,G5,A5,B5,C6,D6,E6,D6,C6,B5,A5,G5,F#5,E5,D5,C5,B4,A4,G3,D4,G4,B4,D5,G5,A5,B5,C6,D6,E6,F#6,G6,A6,B6,C7", time: 100 },
-        { t: "He's a Pirate", lv: "상", p: "D4,F4,G4,G4,G4,A4,Bb4,Bb4,Bb4,C5,A4,A4,G4,F4,F4,G4,D4,F4,G4,G4,G4,A4,Bb4,Bb4,Bb4,C5,A4,A4,G4,F4,G4,D4,F4,G4,G4,G4,C5,D5,D5,D5,Eb5,C5,C5,Bb4,A4,Bb4,G4,D4,E4,F4,G4,A4,Bb4,C5,D5,E5,F5,G5,A5,Bb5,C6,D6,E6,F6,G6,A6,Bb6,C7,D7,C7,Bb6,A6,G6,F6,E6,D6,C6,Bb5,A5,G5,F5,E5,D5,C5,Bb4,A4,G4", time: 110 }
+        { t: "He's a Pirate", lv: "상", p: "D4,F4,G4,G4,G4,A4,Bb4,Bb4,Bb4,C5,A4,A4,G4,F4,F4,G4,D4,F4,G4,G4,G4,A4,Bb4,Bb4,Bb4,C5,A4,A4,G4,F4,G4,D4,F4,G4,G4,G4,C5,D5,D5,D5,Eb5,C5,C5,Bb4,A4,Bb4,G4,D4,E4,F4,G4,A4,Bb4,C5,D5,E5,F5,G5,A5,Bb5,C6,D6,E6,F6,G6,A6,Bb6,C7,D7,C7,Bb6,A6,G6,F6,E6,D6,C6,Bb5,A5,G5,F5,E5,D5", time: 110 }
     ];
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     let violin, lives = 6, score = 0, speed = 4, isPlaying = false, selected = 0;
     let tiles = [], nextNoteIndex = 0, startTime, particles = [], laneGlow = [0, 0, 0, 0];
+    let prevLane = -1;
 
+    // 🎻 지능형 선율 기반 레인 배치 로직
     function getLaneFromNote(note) {
         const notes = ["G3","A3","B3","C4","D4","E4","F4","G4","A4","B4","C5","D5","E5","F#5","F5","G5","Ab5","A5","Bb5","B5","C6","D6","E6","F6","G6","A6","B6","C7","D7","E7","F7","G7","A7","B7","C8"];
         let idx = notes.indexOf(note);
         if (idx === -1) idx = 15;
-        return Math.floor((idx / notes.length) * 4);
+        
+        // 음 높이에 따른 기본 레인 (0~3)
+        let lane = Math.floor((idx / notes.length) * 4);
+        
+        // 🚂 "기차 방지": 이전 타일과 같은 레인이면 강제로 한 칸 이동 (지그재그 효과)
+        if (lane === prevLane) {
+            lane = (lane + 1) % 4;
+        }
+        prevLane = lane;
+        return lane;
     }
 
     function resize() {
@@ -90,14 +103,16 @@
     window.addEventListener('resize', resize);
     resize();
 
-    // 🎻 사운드 클리닝: 잔향을 확 줄여서(1.5, 0.2) 묻히지 않게 함
-    const hall = new Tone.Reverb({ decay: 1.5, wet: 0.2 }).toDestination();
+    // 🎻 스트라디바리우스 사운드 튜닝 (EQ3 및 리버브 조합)
+    const hall = new Tone.Reverb({ decay: 2.2, wet: 0.3 }).toDestination();
+    const eq = new Tone.EQ3({ low: -2, mid: 2, high: 4 }).connect(hall); // 고음의 화사함 강조
+    
     violin = new Tone.Sampler({
         urls: { "G4": "G4.mp3", "C5": "C5.mp3", "E5": "E5.mp3", "G5": "G5.mp3", "A5": "A5.mp3", "D6": "D6.mp3" },
-        release: 1.2,
+        release: 1.5,
         baseUrl: "https://gleitz.github.io/midi-js-soundfonts/FatBoy/violin-mp3/",
-        onload: () => { document.getElementById('start-btn').innerText = "콘서트 무대 입장 ✨"; }
-    }).connect(hall);
+        onload: () => { document.getElementById('start-btn').innerText = "무대 입장 ✨"; }
+    }).connect(eq);
 
     function spawnTile(yPos) {
         const songNotes = songs[selected].p.split(',');
@@ -127,7 +142,7 @@
             if(t.hit) {
                 ctx.fillStyle = "rgba(255, 255, 255, 0.4)"; ctx.fillRect(x, t.y, canvas.width/4, t.h);
             } else {
-                ctx.fillStyle = "rgba(0, 0, 0, 0.85)";
+                ctx.fillStyle = "rgba(0, 0, 0, 0.9)";
                 drawRoundedRect(ctx, x + 6, t.y + 6, canvas.width/4 - 12, t.h - 12, 12);
             }
 
@@ -151,7 +166,7 @@
             p.x += p.vx; p.y += p.vy; p.life -= 0.02;
             if(p.life <= 0) particles.splice(idx, 1);
             else {
-                ctx.fillStyle = `rgba(255, 255, 255, ${p.life})`;
+                ctx.fillStyle = `rgba(255, 215, 0, ${p.life})`;
                 ctx.beginPath(); ctx.arc(p.x, p.y, 2, 0, Math.PI*2); ctx.fill();
             }
         });
@@ -182,8 +197,8 @@
             laneGlow[lane] = 1.0;
             for(let i=0; i<12; i++) particles.push({ x: tx, y: ty, vx: (Math.random()-0.5)*8, vy: (Math.random()-0.5)*8, life: 1.0 });
             
-            // 🎻 선명한 바이올린 소리: 4분음표(4n) 길이로 재생
-            violin.triggerAttackRelease(target.note, "4n", undefined, Math.random()*0.3 + 0.7);
+            // 🎻 스트라디바리우스급 섬세한 발음
+            violin.triggerAttackRelease(target.note, "2n", undefined, Math.random()*0.3 + 0.7);
         } else {
             lives--; if(lives <= 0) endConcert(false);
         }
@@ -202,7 +217,7 @@
         songs.forEach((s, i) => {
             const div = document.createElement('div');
             div.className = `song-item ${i === selected ? 'active' : ''}`;
-            div.innerHTML = `<span>${s.t}</span><small>${s.lv}</small>`;
+            div.innerHTML = `<span>${s.t}</span><small style="color:var(--gold)">Score Mastery</small>`;
             div.onclick = () => { selected = i; renderSongs(); };
             list.appendChild(div);
         });
