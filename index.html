@@ -3,30 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Violin Tiles - Canvas Master</title>
+    <title>Violin Maestro - 15 Songs Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <style>
-        :root { --wood: #d4a373; --gold: #f4d03f; }
+        :root { --wood: #8d6e63; --gold: #ffd700; --easy: #4caf50; --mid: #2196f3; --hard: #f44336; }
         * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: #000; height: 100dvh; overflow: hidden; touch-action: none; display: flex; justify-content: center; align-items: center; }
+        body { background: #000; height: 100dvh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
         
-        canvas { background: linear-gradient(180deg, #e9c46a 0%, #f4a261 100%); width: 100%; height: 100%; max-width: 500px; border-left: 1px solid rgba(255,255,255,0.3); border-right: 1px solid rgba(255,255,255,0.3); }
+        canvas { background: linear-gradient(180deg, #2d1b18 0%, #000 100%); width: 100%; height: 100%; max-width: 500px; border-left: 2px solid var(--gold); border-right: 2px solid var(--gold); }
 
         .ui-layer { position: absolute; top: 0; left: 50%; width: 100%; height: 100%; max-width: 500px; transform: translateX(-50%); pointer-events: none; z-index: 10; display: flex; flex-direction: column; }
-        #lobby, #game-over-screen { pointer-events: auto; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; padding: 20px; color: #fff; height: 100%; justify-content: center; }
+        #lobby, #game-over-screen { pointer-events: auto; background: rgba(0,0,0,0.95); display: flex; flex-direction: column; padding: 25px; color: #fff; height: 100%; justify-content: center; }
         
-        #game-over-screen { display: none; align-items: center; text-align: center; }
-        #final-score { font-size: 50px; color: var(--gold); font-weight: 900; margin: 20px 0; }
-        
-        h1 { text-align: center; font-size: 24px; font-weight: 900; text-shadow: 0 0 10px var(--gold); padding: 20px 0; color: var(--gold); }
-        #song-list { flex: 1; overflow-y: auto; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 10px; margin-bottom: 20px; width: 100%; }
-        .song-item { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 5px; background: rgba(0,0,0,0.4); text-align: left; }
+        #song-list { flex: 1; overflow-y: auto; background: rgba(255,255,255,0.05); border-radius: 15px; padding: 10px; margin: 15px 0; border: 1px solid rgba(255,215,0,0.2); }
+        .song-item { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); border-radius: 8px; margin-bottom: 8px; background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center; }
         .song-item.active { background: var(--gold); color: #000; font-weight: bold; }
-        .btn { width: 100%; padding: 20px; border-radius: 50px; border: none; font-size: 20px; font-weight: 900; background: var(--gold); color: #000; cursor: pointer; pointer-events: auto; }
+        
+        .level-badge { font-size: 10px; padding: 3px 8px; border-radius: 20px; color: #fff; font-weight: 900; }
+        .level-하 { background: var(--easy); }
+        .level-중 { background: var(--mid); }
+        .level-상 { background: var(--hard); }
+
+        .btn { width: 100%; padding: 18px; border-radius: 12px; border: none; font-size: 18px; font-weight: 900; background: var(--gold); color: #000; cursor: pointer; pointer-events: auto; transition: 0.2s; }
+        .btn:active { transform: scale(0.98); }
         
         #game-ui { display: none; padding: 20px; height: 100%; position: relative; }
-        #score { text-align: center; font-size: 60px; font-weight: 900; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-top: 40px;}
-        #hearts { font-size: 24px; color: #fff; position: absolute; top: 20px; left: 20px; }
+        #timer { position: absolute; top: 25px; right: 25px; font-size: 20px; color: var(--gold); font-weight: bold; }
+        #score { text-align: center; font-size: 45px; font-weight: 900; color: #fff; margin-top: 50px; }
+        #hearts { font-size: 20px; position: absolute; top: 25px; left: 25px; }
+        #progress-container { width: 100%; height: 5px; background: rgba(255,255,255,0.1); position: absolute; bottom: 0; left: 0; }
+        #progress-bar { width: 0%; height: 100%; background: var(--gold); transition: 0.1s; }
     </style>
 </head>
 <body>
@@ -35,36 +41,51 @@
 
 <div class="ui-layer">
     <div id="lobby">
-        <h1>VIOLIN MAESTRO</h1>
+        <h1 style="text-align:center; color:var(--gold); font-size:22px;">VIOLIN MASTER: 15 STAGES</h1>
         <div id="song-list"></div>
-        <button id="start-btn" class="btn">악기 조율 중...</button>
+        <button id="start-btn" class="btn">악보 분석 완료</button>
     </div>
 
     <div id="game-ui">
         <div id="hearts">🎻🎻🎻🎻🎻🎻</div>
+        <div id="timer">02:00</div>
         <div id="score">0</div>
+        <div id="progress-container"><div id="progress-bar"></div></div>
     </div>
 
-    <div id="game-over-screen">
-        <h1>연주 종료!</h1>
-        <p>당신의 점수는...</p>
-        <div id="final-score">0</div>
-        <button id="retry-btn" class="btn">다시 연주하기</button>
+    <div id="game-over-screen" style="display:none; text-align:center;">
+        <h1 id="result-title">연주 종료</h1>
+        <div id="final-score" style="font-size: 60px; color: var(--gold); font-weight: 900; margin: 20px 0;">0</div>
+        <button id="retry-btn" class="btn">메인으로</button>
     </div>
 </div>
 
 <script>
     const songs = [
-        { t: "Spring (Four Seasons)", a: "Vivaldi", p: "E5|C4,E5|C4,E5|C4,D5|G3,C5|E3,G4|C3,G4|C3,C5|E3,D5|G3,E5|C4" },
-        { t: "Caprice No. 24", a: "Paganini", p: "A4|A2,C5|E3,B4|E3,A4|A2,G#4|E2,B4|E3,A4|A2,C5|A3,B4|G3,A4|F3" },
-        { t: "La Campanella", a: "Liszt", p: "D#6|D#4,D#6|A#4,D#6|B4,D#6|D#5,D#6|D#4,D#6|A#4,C#6|F#4,B5|D#4,A#5|F4,G#5|D#4,F#5|B3,E5|G#3,D#5|D#3" },
-        { t: "River Flows in You", a: "Yiruma", p: "F#5|F#3,E5|A3,F#5|C#4,C#5|F#4,F#5|D3,E5|A3,F#5|D4,C#5|A4" }
+        // 하 (Easy) - 속도 3 / 증가 0.0002
+        { t: "Twinkle Star", a: "Traditional", lv: "하", p: "C5,C5,G5,G5,A5,A5,G5,F5,F5,E5,E5,D5,D5,C5" },
+        { t: "Edelweiss", a: "Rodgers", lv: "하", p: "E5,G5,D6,C6,G5,F5,E5,E5,E5,F5,G5,A5,G5" },
+        { t: "Amazing Grace", a: "Newton", lv: "하", p: "G4,C5,E5,C5,E5,D5,C5,A4,G4,G4,C5,E5,C5,E5,D5,G5" },
+        { t: "London Bridge", a: "Traditional", lv: "하", p: "G5,A5,G5,F5,E5,F5,G5,D5,E5,F5,E5,F5,G5" },
+        { t: "Long Long Ago", a: "Bayly", lv: "하", p: "C5,C5,D5,E5,F5,G5,G5,A5,G5,F5,E5,D5,C5" },
+        // 중 (Normal) - 속도 4 / 증가 0.0004
+        { t: "Minuet in G", a: "J.S. Bach", lv: "중", p: "D5,G4,A4,B4,C5,D5,G4,G4,E5,C5,D5,E5,F#5,G5,G4,G4" },
+        { t: "The Swan", a: "Saint-Saëns", lv: "중", p: "G4,B4,D5,G5,F#5,E5,D5,B4,A4,G4,A4,B4,D5,A4,G4" },
+        { t: "Humoresque", a: "Dvořák", lv: "중", p: "G5,F#5,G5,E5,D5,B4,G4,A4,B4,D5,G5,F#5,G5,A5,D5" },
+        { t: "Salut d'Amour", a: "Elgar", lv: "중", p: "E5,F#5,G5,A5,B5,C6,D6,B5,G5,E5,C5,A4,F#4,D4" },
+        { t: "Gavotte", a: "Gossec", lv: "중", p: "D5,G5,F#5,G5,A5,G5,F#5,G5,B5,A5,G5,F#5,E5,D5,C5,B4,A4" },
+        // 상 (Hard) - 속도 5.5 / 증가 0.0008
+        { t: "Winter (Vivaldi)", a: "Four Seasons", lv: "상", p: "F5,F5,F5,F5,F5,Ab5,G5,F5,E5,C5,F5,F5,F5,F5,Ab5,G5,F5,E5,C5,C6,C6,C6,C6,C6,C6" },
+        { t: "Hungarian Dance", a: "Brahms", lv: "상", p: "A4,D5,F5,A5,G5,F5,E5,D5,A4,D5,F5,A5,G5,F5,E5,D5,C#5,E5,G5,Bb5,A5,G5,F5,E5,D5" },
+        { t: "Turkish March", a: "Mozart", lv: "상", p: "B4,A4,G#4,A4,C5,D5,C5,B4,C5,E5,F5,E5,D#5,E5,G5,A5,G5,F#5,G5,C6" },
+        { t: "He's a Pirate", a: "Badelt", lv: "상", p: "D4,F4,G4,G4,G4,A4,Bb4,Bb4,Bb4,C5,A4,A4,G4,F4,F4,G4" },
+        { t: "Zigeunerweisen", a: "Sarasate", lv: "상", p: "C5,D5,Eb5,G5,C6,B5,C6,D6,G5,Eb5,D5,C5,B4,G4,C5,D5,Eb5,F5,G5,Ab5,B5,C6" }
     ];
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     let violin, lives = 6, score = 0, speed = 4, isPlaying = false, selected = 0;
-    let tiles = [];
+    let tiles = [], nextNoteIndex = 0, startTime;
 
     function resize() {
         canvas.width = Math.min(window.innerWidth, 500);
@@ -73,12 +94,13 @@
     window.addEventListener('resize', resize);
     resize();
 
-    const hall = new Tone.Reverb({ decay: 2.5, wet: 0.3 }).toDestination();
+    // 바이올린 샘플러 설정
+    const hall = new Tone.Reverb({ decay: 3, wet: 0.4 }).toDestination();
     violin = new Tone.Sampler({
-        urls: { "G4": "G4.mp3", "C5": "C5.mp3", "E5": "E5.mp3", "G5": "G5.mp3" },
-        release: 1.5,
+        urls: { "G4": "G4.mp3", "C5": "C5.mp3", "E5": "E5.mp3", "G5": "G5.mp3", "A5": "A5.mp3", "D6": "D6.mp3" },
+        release: 1,
         baseUrl: "https://gleitz.github.io/midi-js-soundfonts/FatBoy/violin-mp3/",
-        onload: () => { document.getElementById('start-btn').innerText = "바이올린 연주 시작"; }
+        onload: () => { document.getElementById('start-btn').innerText = "바이올린 콘서트 시작"; }
     }).connect(hall);
 
     function renderSongList() {
@@ -87,7 +109,10 @@
         songs.forEach((s, i) => {
             const div = document.createElement('div');
             div.className = `song-item ${i === selected ? 'active' : ''}`;
-            div.innerHTML = `<strong>${s.t}</strong><br><small>${s.a}</small>`;
+            div.innerHTML = `
+                <div><strong>${s.t}</strong><br><small>${s.a}</small></div>
+                <span class="level-badge level-${s.lv}">${s.lv}</span>
+            `;
             div.onclick = () => { selected = i; renderSongList(); };
             list.appendChild(div);
         });
@@ -97,122 +122,86 @@
     function startGame() {
         Tone.start();
         isPlaying = true;
-        tiles = []; score = 0; lives = 6; speed = 4;
-        
+        tiles = []; score = 0; lives = 6; nextNoteIndex = 0;
+        startTime = Date.now();
+
+        // 난이도별 초기 세팅
+        const lv = songs[selected].lv;
+        if(lv === "하") { speed = 3.2; }
+        else if(lv === "중") { speed = 4.2; }
+        else { speed = 5.5; }
+
         document.getElementById('lobby').style.display = 'none';
         document.getElementById('game-over-screen').style.display = 'none';
         document.getElementById('game-ui').style.display = 'block';
-        document.getElementById('score').innerText = score;
-        document.getElementById('hearts').innerText = '🎻'.repeat(lives);
         
         for(let i=0; i<5; i++) spawnTile(canvas.height - (i + 1) * (canvas.height/4));
         animate();
     }
 
-    document.getElementById('start-btn').onclick = startGame;
-    document.getElementById('retry-btn').onclick = () => {
-        document.getElementById('game-over-screen').style.display = 'none';
-        document.getElementById('lobby').style.display = 'flex';
-    };
-
     function spawnTile(yPos) {
         const songNotes = songs[selected].p.split(',');
-        const noteIndex = Math.floor(Math.random() * songNotes.length);
-        tiles.push({
-            lane: Math.floor(Math.random() * 4),
-            y: yPos || -canvas.height/4,
-            h: canvas.height/4,
-            note: songNotes[noteIndex].split('|'),
-            hit: false
-        });
-    }
-
-    function gameOver() {
-        isPlaying = false;
-        document.getElementById('game-ui').style.display = 'none';
-        document.getElementById('game-over-screen').style.display = 'flex';
-        document.getElementById('final-score').innerText = score;
+        const note = songNotes[nextNoteIndex % songNotes.length];
+        tiles.push({ lane: Math.floor(Math.random() * 4), y: yPos || -canvas.height/4, h: canvas.height/4, note: note, hit: false });
+        nextNoteIndex++;
     }
 
     function animate() {
         if(!isPlaying) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        ctx.strokeStyle = "rgba(255,255,255,0.2)";
-        for(let i=1; i<4; i++) {
-            ctx.beginPath();
-            ctx.moveTo(i * canvas.width/4, 0);
-            ctx.lineTo(i * canvas.width/4, canvas.height);
-            ctx.stroke();
-        }
+        let elapsed = (Date.now() - startTime) / 1000;
+        let remaining = Math.max(0, 120 - elapsed);
+        document.getElementById('timer').innerText = `${Math.floor(remaining/60).toString().padStart(2,'0')}:${Math.floor(remaining%60).toString().padStart(2,'0')}`;
+        document.getElementById('progress-bar').style.width = (elapsed / 120 * 100) + "%";
 
-        // 판정선 (화면 하단) 시각적 표시
-        ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
-        ctx.fillRect(0, canvas.height * 0.6, canvas.width, canvas.height * 0.4);
-        ctx.strokeStyle = "rgba(244, 208, 63, 0.5)";
-        ctx.beginPath();
-        ctx.moveTo(0, canvas.height * 0.6);
-        ctx.lineTo(canvas.width, canvas.height * 0.6);
-        ctx.stroke();
+        if(remaining <= 0) { endConcert(true); return; }
 
         for(let i = tiles.length - 1; i >= 0; i--) {
             const t = tiles[i];
             t.y += speed;
-
-            ctx.fillStyle = t.hit ? "rgba(244, 208, 63, 0.5)" : "#3e2723";
-            ctx.fillRect(t.lane * canvas.width/4, t.y, canvas.width/4, t.h);
-            ctx.strokeStyle = "#1a0f00";
-            ctx.strokeRect(t.lane * canvas.width/4, t.y, canvas.width/4, t.h);
-
+            const x = t.lane * canvas.width/4;
+            ctx.fillStyle = t.hit ? "rgba(255,215,0,0.2)" : "#3e2723";
+            ctx.fillRect(x+5, t.y+5, canvas.width/4-10, t.h-10);
             if(t.y > canvas.height && !t.hit) {
-                tiles.splice(i, 1);
                 lives--;
                 document.getElementById('hearts').innerText = '🎻'.repeat(Math.max(0, lives));
-                spawnTile(tiles[tiles.length-1].y - canvas.height/4);
-                
-                if(lives <= 0) {
-                    gameOver();
-                    return; // 게임 오버 시 애니메이션 즉시 중단
-                }
+                tiles.splice(i, 1); spawnTile(tiles[tiles.length-1].y - canvas.height/4);
+                if(lives <= 0) endConcert(false);
             } else if(t.y > canvas.height && t.hit) {
-                tiles.splice(i, 1);
-                spawnTile(tiles[tiles.length-1].y - canvas.height/4);
+                tiles.splice(i, 1); spawnTile(tiles[tiles.length-1].y - canvas.height/4);
             }
         }
+        // 난이도별 가속도
+        speed += (songs[selected].lv === "상" ? 0.0008 : 0.0004);
+        requestAnimationFrame(animate);
+    }
 
-        speed += 0.0005;
-        if(isPlaying) requestAnimationFrame(animate);
+    function endConcert(win) {
+        isPlaying = false;
+        document.getElementById('game-ui').style.display = 'none';
+        document.getElementById('game-over-screen').style.display = 'flex';
+        document.getElementById('result-title').innerText = win ? "앵콜! 완벽한 독주회" : "공연 중단";
+        document.getElementById('final-score').innerText = score;
     }
 
     canvas.addEventListener('pointerdown', (e) => {
         if(!isPlaying) return;
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top; // y좌표 추가
+        const x = e.clientX - canvas.getBoundingClientRect().left;
         const lane = Math.floor(x / (canvas.width / 4));
-
-        let target = null;
-        let lowestY = -Infinity;
-        tiles.forEach(t => {
-            if(!t.hit && t.y > lowestY) {
-                lowestY = t.y;
-                target = t;
-            }
-        });
-
-        // 타일이 판정선(화면 60% 아래)에 진입했을 때만 터치 인정 (터치 범위 완화)
-        if(target && target.lane === lane && (target.y + target.h > canvas.height * 0.5)) {
-            target.hit = true;
-            score++;
+        let target = tiles.find(t => !t.hit && t.y + t.h > canvas.height * 0.4);
+        if(target && target.lane === lane) {
+            target.hit = true; score++;
             document.getElementById('score').innerText = score;
             violin.triggerAttackRelease(target.note, "2n");
         } else {
-            // 잘못 눌렀을 때의 패널티
-            lives--;
-            document.getElementById('hearts').innerText = '🎻'.repeat(Math.max(0, lives));
-            if(lives <= 0) gameOver();
+            lives--; document.getElementById('hearts').innerText = '🎻'.repeat(Math.max(0, lives));
+            if(lives <= 0) endConcert(false);
         }
     });
+
+    document.getElementById('start-btn').onclick = startGame;
+    document.getElementById('retry-btn').onclick = () => location.reload();
 </script>
 </body>
 </html>
