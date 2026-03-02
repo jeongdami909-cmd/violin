@@ -1,1 +1,197 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Violin Tiles - Canvas Master</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        /* 바이올린에 어울리는 따뜻한 우드/골드 톤으로 컬러 변경 */
+        :root { --wood: #d4a373; --gold: #f4d03f; }
+        * { box-sizing: border-box; user-select: none; margin: 0; padding: 0; font-family: 'Pretendard', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: #000; height: 100dvh; overflow: hidden; touch-action: none; display: flex; justify-content: center; align-items: center; }
+        
+        /* 캔버스 배경을 따뜻한 색상으로 그라데이션 */
+        canvas { background: linear-gradient(180deg, #e9c46a 0%, #f4a261 100%); width: 100%; height: 100%; max-width: 500px; border-left: 1px solid rgba(255,255,255,0.3); border-right: 1px solid rgba(255,255,255,0.3); }
 
+        .ui-layer { position: absolute; top: 0; left: 50%; width: 100%; height: 100%; max-width: 500px; transform: translateX(-50%); pointer-events: none; z-index: 10; display: flex; flex-direction: column; }
+        #lobby { pointer-events: auto; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; padding: 20px; color: #fff; height: 100%; }
+        h1 { text-align: center; font-size: 24px; font-weight: 900; text-shadow: 0 0 10px var(--gold); padding: 20px 0; color: var(--gold); }
+        #song-list { flex: 1; overflow-y: auto; background: rgba(255,255,255,0.1); border-radius: 20px; padding: 10px; margin-bottom: 20px; }
+        .song-item { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 5px; background: rgba(0,0,0,0.4); }
+        .song-item.active { background: var(--gold); color: #000; font-weight: bold; }
+        #start-btn { width: 100%; padding: 20px; border-radius: 50px; border: none; font-size: 20px; font-weight: 900; background: var(--gold); color: #000; cursor: pointer; pointer-events: auto; }
+        
+        #game-ui { display: none; padding: 20px; height: 100%; }
+        #score { text-align: center; font-size: 60px; font-weight: 900; color: #fff; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        #hearts { font-size: 24px; color: #fff; position: absolute; top: 20px; left: 20px; }
+    </style>
+</head>
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<div class="ui-layer">
+    <div id="lobby">
+        <h1>VIOLIN MAESTRO</h1>
+        <div id="song-list"></div>
+        <button id="start-btn">명곡 데이터 불러오는 중...</button>
+    </div>
+    <div id="game-ui">
+        <div id="hearts">🎻🎻🎻🎻🎻🎻</div>
+        <div id="score">0</div>
+    </div>
+</div>
+
+<script>
+    // 🎻 바이올린에 어울리는 곡(비발디, 파가니니 등)을 상단에 추가했습니다. 기존 곡도 유지됩니다.
+    const songs = [
+        { t: "Spring (Four Seasons)", a: "Vivaldi", p: "E5|C4,E5|C4,E5|C4,D5|G3,C5|E3,G4|C3,G4|C3,C5|E3,D5|G3,E5|C4" },
+        { t: "Caprice No. 24", a: "Paganini", p: "A4|A2,C5|E3,B4|E3,A4|A2,G#4|E2,B4|E3,A4|A2,C5|A3,B4|G3,A4|F3" },
+        { t: "La Campanella", a: "Liszt", p: "D#6|D#4,D#6|A#4,D#6|B4,D#6|D#5,D#6|D#4,D#6|A#4,C#6|F#4,B5|D#4,A#5|F4,G#5|D#4,F#5|B3,E5|G#3,D#5|D#3" },
+        { t: "River Flows in You", a: "Yiruma", p: "F#5|F#3,E5|A3,F#5|C#4,C#5|F#4,F#5|D3,E5|A3,F#5|D4,C#5|A4" },
+        { t: "Winter Wind", a: "Chopin", p: "A5|A3,G#5|C4,A5|E4,F5|A4,E5|C5,D#5|E5,E5|A5,C5|C6" },
+        { t: "Lacrimosa", a: "Lacrimosa", p: "D4|D2,E4|A2,F4|D3,G4|B2,A4|D3,Bb4|G2,A4|F2" },
+        { t: "Take On Me", a: "a-ha", p: "F#5|Bm2,F#5|Bm3,D5|E2,B4|E3,B4|A2,E5|A3,E5|D2" }
+    ];
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    let violin, lives = 6, score = 0, speed = 4, isPlaying = false, selected = 0;
+    let tiles = [];
+
+    // 화면 크기에 맞춰 캔버스 해상도 조절
+    function resize() {
+        canvas.width = Math.min(window.innerWidth, 500);
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    // 🎧 Tone.js 바이올린 사운드 세팅
+    // 바이올린의 찰현악기 특성을 살리기 위해 Reverb(리버브) 공간감을 조금 더 주었습니다.
+    const hall = new Tone.Reverb({ decay: 2.5, wet: 0.3 }).toDestination();
+    
+    // 외부에 호스팅된 바이올린 샘플러(FatBoy Soundfont)를 불러옵니다.
+    violin = new Tone.Sampler({
+        urls: { 
+            "G4": "G4.mp3", 
+            "C5": "C5.mp3", 
+            "E5": "E5.mp3", 
+            "G5": "G5.mp3" 
+        },
+        release: 1.5,
+        baseUrl: "https://gleitz.github.io/midi-js-soundfonts/FatBoy/violin-mp3/",
+        onload: () => { document.getElementById('start-btn').innerText = "바이올린 연주 시작"; }
+    }).connect(hall);
+
+    function renderSongList() {
+        const list = document.getElementById('song-list');
+        list.innerHTML = "";
+        songs.forEach((s, i) => {
+            const div = document.createElement('div');
+            div.className = `song-item ${i === selected ? 'active' : ''}`;
+            div.innerHTML = `<strong>${s.t}</strong><br><small>${s.a}</small>`;
+            div.onclick = () => { selected = i; renderSongList(); };
+            list.appendChild(div);
+        });
+    }
+    renderSongList();
+
+    document.getElementById('start-btn').onclick = async () => {
+        await Tone.start();
+        isPlaying = true;
+        tiles = []; score = 0; lives = 6; speed = 4;
+        document.getElementById('lobby').style.display = 'none';
+        document.getElementById('game-ui').style.display = 'block';
+        
+        // 초기 타일 5개 생성
+        for(let i=0; i<5; i++) spawnTile(canvas.height - (i + 1) * (canvas.height/4));
+        animate();
+    };
+
+    function spawnTile(yPos) {
+        const songNotes = songs[selected].p.split(',');
+        const noteIndex = Math.floor(Math.random() * songNotes.length);
+        tiles.push({
+            lane: Math.floor(Math.random() * 4),
+            y: yPos || -canvas.height/4,
+            h: canvas.height/4,
+            note: songNotes[noteIndex].split('|'),
+            hit: false
+        });
+    }
+
+    function animate() {
+        if(!isPlaying) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 레인 가이드 선 그리기
+        ctx.strokeStyle = "rgba(255,255,255,0.2)";
+        for(let i=1; i<4; i++) {
+            ctx.beginPath();
+            ctx.moveTo(i * canvas.width/4, 0);
+            ctx.lineTo(i * canvas.width/4, canvas.height);
+            ctx.stroke();
+        }
+
+        // 타일 이동 및 그리기
+        for(let i = tiles.length - 1; i >= 0; i--) {
+            const t = tiles[i];
+            t.y += speed;
+
+            // 터치된 타일은 투명도 있는 골드, 안 된 타일은 짙은 갈색
+            ctx.fillStyle = t.hit ? "rgba(244, 208, 63, 0.5)" : "#3e2723";
+            ctx.fillRect(t.lane * canvas.width/4, t.y, canvas.width/4, t.h);
+            ctx.strokeStyle = "#1a0f00";
+            ctx.strokeRect(t.lane * canvas.width/4, t.y, canvas.width/4, t.h);
+
+            // 바닥에 닿았을 때 실패 판정
+            if(t.y > canvas.height && !t.hit) {
+                tiles.splice(i, 1);
+                lives--;
+                document.getElementById('hearts').innerText = '🎻'.repeat(Math.max(0, lives));
+                spawnTile(tiles[tiles.length-1].y - canvas.height/4);
+                if(lives <= 0) isPlaying = false;
+            } else if(t.y > canvas.height && t.hit) {
+                tiles.splice(i, 1);
+                spawnTile(tiles[tiles.length-1].y - canvas.height/4);
+            }
+        }
+
+        speed += 0.0005;
+        if(lives > 0) requestAnimationFrame(animate);
+        else location.reload();
+    }
+
+    canvas.addEventListener('pointerdown', (e) => {
+        if(!isPlaying) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const lane = Math.floor(x / (canvas.width / 4));
+
+        let target = null;
+        let lowestY = -Infinity;
+        tiles.forEach(t => {
+            if(!t.hit && t.y > lowestY) {
+                lowestY = t.y;
+                target = t;
+            }
+        });
+
+        if(target && target.lane === lane && target.y + target.h > canvas.height * 0.5) {
+            target.hit = true;
+            score++;
+            document.getElementById('score').innerText = score;
+            
+            // 바이올린 소리 재생 (찰현악기 느낌을 위해 "2n" 정도의 길이 유지)
+            violin.triggerAttackRelease(target.note, "2n");
+        } else {
+            lives--;
+            document.getElementById('hearts').innerText = '🎻'.repeat(Math.max(0, lives));
+            if(lives <= 0) isPlaying = false;
+        }
+    });
+</script>
+</body>
+</html>
